@@ -9,7 +9,7 @@ function ProductList() {
     const fetchCars = async () => {
       try {
         const token = `Bearer ${localStorage.getItem('token')}`;
-        const res = await axios.get('http://localhost:5001/api/cars', {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/cars`, {
           headers: {
             Authorization: token
           }
@@ -25,7 +25,7 @@ function ProductList() {
   const handleSearch = async () => {
     try {
       const token = `Bearer ${localStorage.getItem('token')}`;
-      const res = await axios.get(`http://localhost:5001/api/cars/search?keyword=${keyword}`, {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/cars/search?keyword=${keyword}`, {
         headers: {
           Authorization: token
         }

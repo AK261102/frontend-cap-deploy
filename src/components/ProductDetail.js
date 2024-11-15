@@ -17,7 +17,7 @@ function ProductDetail() {
       try {
         setLoading(true);
         const token = `Bearer ${localStorage.getItem('token')}`;
-        const res = await axios.get(`http://localhost:5001/api/cars/${id}`, {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/cars/${id}`, {
           headers: {
             Authorization: token,
           },
@@ -42,7 +42,7 @@ function ProductDetail() {
     }
     try {
       const token = `Bearer ${localStorage.getItem('token')}`;
-      await axios.put(`http://localhost:5001/api/cars/${id}`, { title, description, tags: tags.split(', ') }, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/api/cars/${id}`, { title, description, tags: tags.split(', ') }, {
         headers: {
           Authorization: token,
         },
@@ -57,7 +57,7 @@ function ProductDetail() {
   const handleDelete = async () => {
     try {
       const token = `Bearer ${localStorage.getItem('token')}`;
-      await axios.delete(`http://localhost:5001/api/cars/${id}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/cars/${id}`, {
         headers: {
           Authorization: token,
         },
