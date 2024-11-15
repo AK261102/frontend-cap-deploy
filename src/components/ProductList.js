@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+// `${process.env.REACT_APP_API_URL}/api/cars`,
+import React, { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 function ProductList() {
   const [cars, setCars] = useState([]);
   const [keyword, setKeyword] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -11,51 +14,118 @@ function ProductList() {
         const token = `Bearer ${localStorage.getItem('token')}`;
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/cars`, {
           headers: {
-            Authorization: token
-          }
+            Authorization: token,
+          },
         });
         setCars(res.data);
       } catch (err) {
-        console.error('Error fetching cars:', err.message);
+        console.error('Error fetching cars:', err);
       }
     };
     fetchCars();
   }, []);
 
   const handleSearch = async () => {
+    const trimmedKeyword = keyword;
+  
+    if (!trimmedKeyword) {
+      alert('Please enter a valid keyword for search.');
+      return;
+    }
+  
     try {
       const token = `Bearer ${localStorage.getItem('token')}`;
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/cars/search?keyword=${keyword}`, {
+      console.log('Searching with keyword:', trimmedKeyword); // Log the keyword for debugging
+  
+      // Make the API request to the backend
+      const res = await axios.get(`http://localhost:5001/api/cars/search?trimmedKeyword}`, {
         headers: {
-          Authorization: token
-        }
+          Authorization: token,
+        },
       });
-      setCars(res.data);
+  
+      // Check and handle the response
+      if (res.status === 200) {
+        if (res.data.length === 0) {
+          alert('No cars found matching the search keyword.');
+        } else {
+          setCars(res.data);
+        }
+      }
     } catch (err) {
-      console.error('Error searching cars:', err.message);
+      console.error('Error searching cars:', err);
+  
+      if (err.response) {
+        if (err.response.status === 400) {
+          alert(err.response.data.message || 'Invalid search keyword. Please try again.');
+        } else if (err.response.status === 404) {
+          alert('No cars found matching the search keyword.');
+        } else {
+          alert('An error occurred while searching. Please try again.');
+        }
+      } else {
+        alert('Unable to search at the moment. Please try again later.');
+      }
     }
+  };
+  
+  
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/'); // Redirect to login/signup page after logout
+  };
+
+  const handleAddCar = () => {
+    navigate('/add-car'); // Assuming you have a route for adding a car
   };
 
   return (
-    <div className="max-w-5xl mx-auto mt-10 p-6">
-      <h2 className="text-4xl font-bold mb-6">Your Cars</h2>
-      <div className="mb-4">
+    <div className="max-w-5xl mx-auto mt-10 p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Your Cars</h1>
+        <div className="flex space-x-4">
+          <button
+            onClick={handleAddCar}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+          >
+            Add Car
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+          >
+            Log Out
+          </button>
+        </div>
+      </div>
+      <div className="flex mb-6">
         <input
           type="text"
-          placeholder="Search cars"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          className="p-3 border rounded w-2/3 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="Search cars"
+          className="flex-grow p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
-        <button onClick={handleSearch} className="ml-4 bg-blue-600 text-white px-5 py-3 rounded hover:bg-blue-700 transition">Search</button>
+        <button
+          onClick={handleSearch}
+          className="bg-blue-500 text-white px-4 py-3 ml-2 rounded hover:bg-blue-600 transition"
+        >
+          Search
+        </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cars.map((car) => (
-          <div key={car._id} className="p-6 bg-white shadow-lg rounded-lg border hover:shadow-xl transition">
+          <div key={car._id} className="bg-white p-6 shadow-lg rounded-lg">
             <h3 className="text-2xl font-bold mb-2">{car.title}</h3>
-            <p className="mb-3">{car.description}</p>
+            <p className="mb-4">{car.description}</p>
             <p className="text-gray-600 mb-4">Tags: {car.tags.join(', ')}</p>
-            <a href={`/cars/${car._id}`} className="text-blue-600 hover:underline">View Details</a>
+            <Link
+              to={`/cars/${car._id}`}
+              className="text-blue-500 hover:underline"
+            >
+              View Details
+            </Link>
           </div>
         ))}
       </div>
